@@ -6,7 +6,7 @@
   <link href="https://www.w3.org/StyleSheets/TR/2016/W3C-ED" rel="stylesheet" type="text/css">
   <meta content="Bikeshed version 800b43329, updated Tue May 25 14:13:32 2021 -0700" name="generator">
   <link href="https://www.w3.org/TR/webxr/" rel="canonical">
-  <meta content="fc75ef4972c39605a613eee5986d2a7d6f900252" name="document-revision">
+  <meta content="1d3c91a9eacd06f8c415c30d499d21f64a02cfc5" name="document-revision">
   <link href="favicon-32x32.png" rel="icon" sizes="32x32" type="image/png">
   <link href="favicon-96x96.png" rel="icon" sizes="96x96" type="image/png">
 <style>
@@ -695,7 +695,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"><a class="logo" href="https://www.w3.org/"> <img alt="W3C" height="48" src="https://www.w3.org/StyleSheets/TR/2016/logos/W3C" width="72"> </a> </p>
    <h1 class="p-name no-ref" id="title">WebXR Device API</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2021-06-17">17 June 2021</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2021-06-18">18 June 2021</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1583,6 +1583,40 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     </ol>
     <p class="note" role="note"><span>NOTE:</span> The <a href="https://immersive-web.github.io/layers">WebXR layers module</a> will introduce new semantics for this algorithm.</p>
    </div>
+   <div class="algorithm" data-algorithm="apply-target-frame-rate">
+    <p>When requested, the <code class="idl"><a data-link-type="idl" href="#xrsession" id="ref-for-xrsession③③">XRSession</a></code> <var>session</var> MUST <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="apply-the-target-frame-rate">apply the target frame rate</dfn> <var>rate</var> by running the following steps:</p>
+    <ol>
+     <li data-md>
+      <p><a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-task" id="ref-for-queue-a-task①⓪">Queue a task</a> to perform the following steps:</p>
+      <ol>
+       <li data-md>
+        <p>Set the <a data-link-type="dfn" href="#xr-compositor" id="ref-for-xr-compositor">XR Compositor</a> to the new target frame rate <var>rate</var>. If <var>rate</var> is <code>0</code>, the <a data-link-type="dfn" href="#xr-compositor" id="ref-for-xr-compositor①">XR Compositor</a> is free to choose any frame rate.</p>
+       <li data-md>
+        <p>Set the <var>session</var>’s internal <a data-link-type="dfn" href="#xrsession-framerate" id="ref-for-xrsession-framerate">framerate</a> to the <code class="idl"><a data-link-type="idl" href="#xrsystem" id="ref-for-xrsystem①⓪">XRSystem</a></code>'s recommendec frame rate.</p>
+       <li data-md>
+        <p>Fire an <code class="idl"><a data-link-type="idl" href="#xrsessionevent" id="ref-for-xrsessionevent①">XRSessionEvent</a></code> event named <code class="idl"><a class="idl-code" data-link-type="event" href="#eventdef-xrsession-targetframeratechange" id="ref-for-eventdef-xrsession-targetframeratechange">targetframeratechange</a></code> on <var>session</var>.</p>
+      </ol>
+    </ol>
+   </div>
+   <p class="note" role="note"><span>NOTE:</span> the <a data-link-type="dfn" href="#xr-compositor" id="ref-for-xr-compositor②">XR Compositor</a> is allowed to run at a different frame rate then the <code class="idl"><a data-link-type="idl" href="#xrsession" id="ref-for-xrsession③④">XRSession</a></code>'s <a data-link-type="dfn" href="#xrsession-framerate" id="ref-for-xrsession-framerate①">framerate</a>.</p>
+   <div class="algorithm" data-algorithm="update-target-frame-rate">
+    <p>The <dfn class="dfn-paneled idl-code" data-dfn-for="XRSession" data-dfn-type="method" data-export id="dom-xrsession-updatetargetframerate"><code>updateTargetFrameRate(<var>rate</var>)</code></dfn> method queues an update to the <code class="idl"><a data-link-type="idl" href="#xrsession" id="ref-for-xrsession③⑤">XRSession</a></code>'s frame rate <var>rate</var>.</p>
+    <p>When this method is invoked, the user agent MUST run the following steps:</p>
+    <ol>
+     <li data-md>
+      <p>Let <var>session</var> be <a data-link-type="dfn" href="https://heycam.github.io/webidl/#this" id="ref-for-this②">this</a>.</p>
+     <li data-md>
+      <p>If <var>session</var>’s <a data-link-type="dfn" href="#xrsession-mode" id="ref-for-xrsession-mode①">mode</a> value is <code class="idl"><a data-link-type="idl" href="#dom-xrsessionmode-inline" id="ref-for-dom-xrsessionmode-inline⑦">"inline"</a></code>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror③">InvalidStateError</a></code> and abort these steps.</p>
+     <li data-md>
+      <p>If <var>session</var>’s <a data-link-type="dfn" href="#ended" id="ref-for-ended②">ended</a> value is <code>true</code>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror④">InvalidStateError</a></code> and abort these steps.</p>
+     <li data-md>
+      <p>If <var>rate</var> is not in <code class="idl"><a data-link-type="idl" href="#dom-xrsession-supportedframerates" id="ref-for-dom-xrsession-supportedframerates①">supportedFrameRates</a></code>, throw a <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#exceptiondef-typeerror" id="ref-for-exceptiondef-typeerror">TypeError</a></code> and abort these steps.</p>
+     <li data-md>
+      <p>If <var>rate</var> is equal to <a data-link-type="dfn" href="#xrsession-framerate" id="ref-for-xrsession-framerate②">framerate</a>, abort these steps.</p>
+     <li data-md>
+      <p><a data-link-type="dfn" href="#apply-the-target-frame-rate" id="ref-for-apply-the-target-frame-rate">Apply the target frame rate</a> with <var>rate</var>.</p>
+    </ol>
+   </div>
    <div class="algorithm" data-algorithm="update-render-state">
     <div class="mdn-anno wrapped">
      <button class="mdn-anno-btn"><b class="less-than-two-engines-flag" title="This feature is in less than two current engines.">⚠</b><span>MDN</span></button>
@@ -1604,13 +1638,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <p>When this method is invoked, the user agent MUST run the following steps:</p>
     <ol>
      <li data-md>
-      <p>Let <var>session</var> be <a data-link-type="dfn" href="https://heycam.github.io/webidl/#this" id="ref-for-this②">this</a>.</p>
+      <p>Let <var>session</var> be <a data-link-type="dfn" href="https://heycam.github.io/webidl/#this" id="ref-for-this③">this</a>.</p>
      <li data-md>
-      <p>If <var>session</var>’s <a data-link-type="dfn" href="#ended" id="ref-for-ended②">ended</a> value is <code>true</code>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror③">InvalidStateError</a></code> and abort these steps.</p>
+      <p>If <var>session</var>’s <a data-link-type="dfn" href="#ended" id="ref-for-ended③">ended</a> value is <code>true</code>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror⑤">InvalidStateError</a></code> and abort these steps.</p>
      <li data-md>
-      <p>If <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-baselayer" id="ref-for-dom-xrrenderstateinit-baselayer">baseLayer</a></code> was created with an <code class="idl"><a data-link-type="idl" href="#xrsession" id="ref-for-xrsession③③">XRSession</a></code> other than <var>session</var>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror④">InvalidStateError</a></code> and abort these steps.</p>
+      <p>If <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-baselayer" id="ref-for-dom-xrrenderstateinit-baselayer">baseLayer</a></code> was created with an <code class="idl"><a data-link-type="idl" href="#xrsession" id="ref-for-xrsession③⑥">XRSession</a></code> other than <var>session</var>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror⑥">InvalidStateError</a></code> and abort these steps.</p>
      <li data-md>
-      <p>If <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-inlineverticalfieldofview" id="ref-for-dom-xrrenderstateinit-inlineverticalfieldofview">inlineVerticalFieldOfView</a></code> is set and <var>session</var> is an <a data-link-type="dfn" href="#immersive-session" id="ref-for-immersive-session①⑤">immersive session</a>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror⑤">InvalidStateError</a></code> and abort these steps.</p>
+      <p>If <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-inlineverticalfieldofview" id="ref-for-dom-xrrenderstateinit-inlineverticalfieldofview">inlineVerticalFieldOfView</a></code> is set and <var>session</var> is an <a data-link-type="dfn" href="#immersive-session" id="ref-for-immersive-session①⑤">immersive session</a>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror⑦">InvalidStateError</a></code> and abort these steps.</p>
      <li data-md>
       <p>If none of <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-depthnear" id="ref-for-dom-xrrenderstateinit-depthnear">depthNear</a></code>, <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-depthfar" id="ref-for-dom-xrrenderstateinit-depthfar">depthFar</a></code>, <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-inlineverticalfieldofview" id="ref-for-dom-xrrenderstateinit-inlineverticalfieldofview①">inlineVerticalFieldOfView</a></code>, <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-baselayer" id="ref-for-dom-xrrenderstateinit-baselayer①">baseLayer</a></code>, <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-layers" id="ref-for-dom-xrrenderstateinit-layers①">layers</a></code> are set, abort these steps.</p>
      <li data-md>
@@ -1627,40 +1661,6 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <p>If <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-inlineverticalfieldofview" id="ref-for-dom-xrrenderstateinit-inlineverticalfieldofview②">inlineVerticalFieldOfView</a></code> is set, set <var>session</var>’s <a data-link-type="dfn" href="#pending-render-state" id="ref-for-pending-render-state③">pending render state</a>'s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstate-inlineverticalfieldofview" id="ref-for-dom-xrrenderstate-inlineverticalfieldofview">inlineVerticalFieldOfView</a></code> to <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-inlineverticalfieldofview" id="ref-for-dom-xrrenderstateinit-inlineverticalfieldofview③">inlineVerticalFieldOfView</a></code>.</p>
      <li data-md>
       <p>If <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-baselayer" id="ref-for-dom-xrrenderstateinit-baselayer②">baseLayer</a></code> is set, set <var>session</var>’s <a data-link-type="dfn" href="#pending-render-state" id="ref-for-pending-render-state④">pending render state</a>'s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstate-baselayer" id="ref-for-dom-xrrenderstate-baselayer">baseLayer</a></code> to <var>newState</var>’s <code class="idl"><a data-link-type="idl" href="#dom-xrrenderstateinit-baselayer" id="ref-for-dom-xrrenderstateinit-baselayer③">baseLayer</a></code>.</p>
-    </ol>
-   </div>
-   <div class="algorithm" data-algorithm="apply-target-frame-rate">
-    <p>When requested, the <code class="idl"><a data-link-type="idl" href="#xrsession" id="ref-for-xrsession③④">XRSession</a></code> <var>session</var> MUST <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="apply-the-target-frame-rate">apply the target frame rate</dfn> <var>rate</var> by running the following steps:</p>
-    <ol>
-     <li data-md>
-      <p><a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-task" id="ref-for-queue-a-task①⓪">Queue a task</a> to perform the following steps:</p>
-      <ol>
-       <li data-md>
-        <p>Set the <a data-link-type="dfn" href="#xr-compositor" id="ref-for-xr-compositor">XR Compositor</a> to the new target frame rate <var>rate</var>. If <var>rate</var> is <code>0</code>, the <a data-link-type="dfn" href="#xr-compositor" id="ref-for-xr-compositor①">XR Compositor</a> is free to choose any frame rate.</p>
-       <li data-md>
-        <p>Set the <var>session</var>’s internal <a data-link-type="dfn" href="#xrsession-framerate" id="ref-for-xrsession-framerate">framerate</a> to the <code class="idl"><a data-link-type="idl" href="#xrsystem" id="ref-for-xrsystem①⓪">XRSystem</a></code>'s recommendec frame rate.</p>
-       <li data-md>
-        <p>Fire an <code class="idl"><a data-link-type="idl" href="#xrsessionevent" id="ref-for-xrsessionevent①">XRSessionEvent</a></code> event named <code class="idl"><a class="idl-code" data-link-type="event" href="#eventdef-xrsession-targetframeratechange" id="ref-for-eventdef-xrsession-targetframeratechange">targetframeratechange</a></code> on <var>session</var>.</p>
-      </ol>
-    </ol>
-   </div>
-   <p class="note" role="note"><span>NOTE:</span> the <a data-link-type="dfn" href="#xr-compositor" id="ref-for-xr-compositor②">XR Compositor</a> is allowed to run at a different frame rate then the <code class="idl"><a data-link-type="idl" href="#xrsession" id="ref-for-xrsession③⑤">XRSession</a></code>'s <a data-link-type="dfn" href="#xrsession-framerate" id="ref-for-xrsession-framerate①">framerate</a>.</p>
-   <div class="algorithm" data-algorithm="update-target-frame-rate">
-    <p>The <dfn class="dfn-paneled idl-code" data-dfn-for="XRSession" data-dfn-type="method" data-export id="dom-xrsession-updatetargetframerate"><code>updateTargetFrameRate(<var>rate</var>)</code></dfn> method queues an update to the <code class="idl"><a data-link-type="idl" href="#xrsession" id="ref-for-xrsession③⑥">XRSession</a></code>'s frame rate <var>rate</var>.</p>
-    <p>When this method is invoked, the user agent MUST run the following steps:</p>
-    <ol>
-     <li data-md>
-      <p>Let <var>session</var> be <a data-link-type="dfn" href="https://heycam.github.io/webidl/#this" id="ref-for-this③">this</a>.</p>
-     <li data-md>
-      <p>If <var>session</var>’s <a data-link-type="dfn" href="#xrsession-mode" id="ref-for-xrsession-mode①">mode</a> value is <code class="idl"><a data-link-type="idl" href="#dom-xrsessionmode-inline" id="ref-for-dom-xrsessionmode-inline⑦">"inline"</a></code>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror⑥">InvalidStateError</a></code> and abort these steps.</p>
-     <li data-md>
-      <p>If <var>session</var>’s <a data-link-type="dfn" href="#ended" id="ref-for-ended③">ended</a> value is <code>true</code>, throw an <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#invalidstateerror" id="ref-for-invalidstateerror⑦">InvalidStateError</a></code> and abort these steps.</p>
-     <li data-md>
-      <p>If <var>rate</var> is not in <code class="idl"><a data-link-type="idl" href="#dom-xrsession-supportedframerates" id="ref-for-dom-xrsession-supportedframerates①">supportedFrameRates</a></code>, throw a <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#exceptiondef-typeerror" id="ref-for-exceptiondef-typeerror">TypeError</a></code> and abort these steps.</p>
-     <li data-md>
-      <p>If <var>rate</var> is equal to <a data-link-type="dfn" href="#xrsession-framerate" id="ref-for-xrsession-framerate②">framerate</a>, abort these steps.</p>
-     <li data-md>
-      <p><a data-link-type="dfn" href="#apply-the-target-frame-rate" id="ref-for-apply-the-target-frame-rate">Apply the target frame rate</a> with <var>rate</var>.</p>
     </ol>
    </div>
    <div class="algorithm" data-algorithm="apply-pending-render-state">
@@ -7092,7 +7092,7 @@ have been the <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipa
    <dt id="biblio-infra">[INFRA]
    <dd>Anne van Kesteren; Domenic Denicola. <a href="https://infra.spec.whatwg.org/">Infra Standard</a>. Living Standard. URL: <a href="https://infra.spec.whatwg.org/">https://infra.spec.whatwg.org/</a>
    <dt id="biblio-permissions">[PERMISSIONS]
-   <dd>Mounir Lamouri; Marcos Caceres; Jeffrey Yasskin. <a href="https://www.w3.org/TR/permissions/">Permissions</a>. 20 July 2020. WD. URL: <a href="https://www.w3.org/TR/permissions/">https://www.w3.org/TR/permissions/</a>
+   <dd>Mounir Lamouri; Marcos Caceres; Jeffrey Yasskin. <a href="https://www.w3.org/TR/permissions/">Permissions</a>. 17 June 2021. WD. URL: <a href="https://www.w3.org/TR/permissions/">https://www.w3.org/TR/permissions/</a>
    <dt id="biblio-permissions-policy-1">[PERMISSIONS-POLICY-1]
    <dd>Ian Clelland. <a href="https://www.w3.org/TR/permissions-policy-1/">Permissions Policy</a>. 16 July 2020. WD. URL: <a href="https://www.w3.org/TR/permissions-policy-1/">https://www.w3.org/TR/permissions-policy-1/</a>
    <dt id="biblio-permissions-request">[PERMISSIONS-REQUEST]
@@ -7881,13 +7881,6 @@ have been the <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipa
     <li><a href="#ref-for-update-the-pending-layers-state">4.1. XRSession</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="dom-xrsession-updaterenderstate">
-   <b><a href="#dom-xrsession-updaterenderstate">#dom-xrsession-updaterenderstate</a></b><b>Referenced in:</b>
-   <ul>
-    <li><a href="#ref-for-dom-xrsession-updaterenderstate">4.1. XRSession</a>
-    <li><a href="#ref-for-dom-xrsession-updaterenderstate①">4.2. XRRenderState</a>
-   </ul>
-  </aside>
   <aside class="dfn-panel" data-for="apply-the-target-frame-rate">
    <b><a href="#apply-the-target-frame-rate">#apply-the-target-frame-rate</a></b><b>Referenced in:</b>
    <ul>
@@ -7898,6 +7891,13 @@ have been the <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipa
    <b><a href="#dom-xrsession-updatetargetframerate">#dom-xrsession-updatetargetframerate</a></b><b>Referenced in:</b>
    <ul>
     <li><a href="#ref-for-dom-xrsession-updatetargetframerate">4.1. XRSession</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="dom-xrsession-updaterenderstate">
+   <b><a href="#dom-xrsession-updaterenderstate">#dom-xrsession-updaterenderstate</a></b><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-xrsession-updaterenderstate">4.1. XRSession</a>
+    <li><a href="#ref-for-dom-xrsession-updaterenderstate①">4.2. XRRenderState</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="apply-the-pending-render-state">

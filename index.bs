@@ -757,32 +757,6 @@ When this method is invoked, the user agent MUST run the following steps:
 
 </div>
 
-<div class="algorithm" data-algorithm="apply-target-frame-rate">
-
-When requested, the {{XRSession}} |session| MUST <dfn>apply the target frame rate</dfn> |rate| by running the following steps:
-  1. [=Queue a task=] to perform the following steps:
-    1. Set the [=XR Compositor=] to the new target frame rate |rate|. If |rate| is <code>0</code>, the [=XR Compositor=] is free to choose any frame rate.
-    1. Set the |session|'s internal [=XRSession/framerate=] to the {{XRSystem}}'s recommendec frame rate.
-    1. Fire an {{XRSessionEvent}} event named {{targetframeratechange!!event}} on |session|.
-
-</div>
-
-NOTE: the [=XR Compositor=] is allowed to run at a different frame rate then the {{XRSession}}'s [=XRSession/framerate=].
-
-<div class="algorithm" data-algorithm="update-target-frame-rate">
-
-The <dfn method for="XRSession">updateTargetFrameRate(|rate|)</dfn> method queues an update to the {{XRSession}}'s frame rate |rate|.
-
-When this method is invoked, the user agent MUST run the following steps:
-  1. Let |session| be [=this=].
-  1. If |session|'s [=XRSession/mode=] value is {{XRSessionMode/"inline"}}, throw an {{InvalidStateError}} and abort these steps.
-  1. If |session|'s [=ended=] value is `true`, throw an {{InvalidStateError}} and abort these steps.
-  1. If |rate| is not in {{XRSession/supportedFrameRates}}, throw a {{TypeError}} and abort these steps.
-  1. If |rate| is equal to [=XRSession/framerate=], abort these steps.
-  1. [=Apply the target frame rate=] with |rate|.
-
-</div>
-
 <div class="algorithm" data-algorithm="apply-pending-render-state">
 
 When requested, the {{XRSession}} |session| MUST <dfn>apply the pending render state</dfn> by running the following steps:
