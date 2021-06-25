@@ -719,7 +719,7 @@ When requested, the {{XRSession}} |session| MUST <dfn>apply the target frame rat
     1. The [=XR Compositor=] MAY use |rate| to update the {{XRSystem}}'s frame rate.
     1. Set the |session|'s internal [=XRSession/framerate=] to the {{XRSystem}}'s recommended frame rate. It is up to the {{XRSystem}} to determine this recommended frame rate.
     1. If the frame rate was changed, fire an {{XRSessionEvent}} event named {{targetframeratechange!!event}} on |session| if the internal [=XRSession/framerate=] was changed.
-    1. [=/resolve=] |promise|.
+    1. If |promise| is not `null`, [=/resolve=] |promise|.
 
 </div>
 
