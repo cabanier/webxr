@@ -2589,6 +2589,39 @@ The optional <dfn attribute for="XRReferenceSpaceEvent">transform</dfn> attribut
 
 NOTE: situations where {{XRReferenceSpaceEvent/referenceSpace}} or {{XRReferenceSpaceEventInit/referenceSpace}} can be when the headset was doffed and donned between 2 seperate locations. In such cases, if the experience relies on world-locked content, it should warn the user and reset the scene.
 
+XRVisibilityMaskChangeEvent {#xrvisibilitymaskchangeevent-interface}
+--------------
+
+Because of features like reprojection, the entire area of the {{XRLayer}} MAY not be displayed. This event will inform the experience about the region of the {{XRView}} that is displayed to the user.
+
+The {{XRVisibilityMaskChangeEvent}} event is fired when the user agent wants to inform the experience that the displayed area of the {{XRLayer}} changed. The experience MAY choose to only draw that region which MAY help with performance. 
+
+<pre class="idl">
+[SecureContext, Exposed=Window]
+interface XRVisibilityMaskChangeEvent : Event {
+  constructor(DOMString type, XRVisibilityMaskChangeEventInit eventInitDict);
+  [SameObject] readonly attribute XRSession session;
+  readonly attribute XREye eye;
+  readonly attribute FrozenArray&lt;DOMPointReadOnly&gt;? polygon;
+};
+
+dictionary XRVisibilityMaskChangeEventInit : EventInit {
+  required XRSession session;
+  required XREye eye;
+  required sequence&lt;DOMPointReadOnly&gt; polygon;
+};
+</pre>
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">session</dfn> attribute indicates the {{XRSession}} that generated the event.
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">eye</dfn> attribute indicates which {{XREye}} the mask applies to.
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">polygon</dfn> attribute is an optional [=/list=] of {{DOMPointReadOnly}} vertices that encompass the region of the eye's {{XRView}} that SHOULD be drawn. If this attribute is `null`, the whole region of the {{XRView}} SHOULD be drawn. The <code>Z</code> coordinate of each {{DOMPointReadOnly}} vertex in {{XRVisibilityMaskChangeEvent/polygon}} MUST be <code>-1</code>.
+
+The area MUST be drawn using the {{XRViewGeometry/projectionMatrix}} of the {{XRView}} of {{XRVisibilityMaskChangeEvent/eye}} and a default {{XRRigidTransform}}.
+
+NOTE: this means that the area MUST NOT use the {{XRRigidTransform}} of the current {{XRView}} of {{XRVisibilityMaskChangeEvent/eye}}.
+
 Event Types {#event-types}
 -----------
 
