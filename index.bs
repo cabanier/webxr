@@ -2592,7 +2592,7 @@ NOTE: situations where {{XRReferenceSpaceEvent/referenceSpace}} or {{XRReference
 XRVisibilityMaskChangeEvent {#xrvisibilitymaskchangeevent-interface}
 --------------
 
-Because of features like reprojection, the entire area of the {{XRLayer}} MAY not be displayed. This event will inform the experience about the region of the {{XRView}} that is displayed to the user.
+Because the frustum does not intersect precisely with the rectangular display, the entire area of the {{XRLayer}} MAY not be displayed. This event will inform the experience about the region of the {{XRView}} that is displayed to the user.
 
 The {{XRVisibilityMaskChangeEvent}} event is fired when the user agent wants to inform the experience that the displayed area of the {{XRLayer}} changed. The experience MAY choose to only draw that region which MAY help with performance. 
 
@@ -2602,13 +2602,15 @@ interface XRVisibilityMaskChangeEvent : Event {
   constructor(DOMString type, XRVisibilityMaskChangeEventInit eventInitDict);
   [SameObject] readonly attribute XRSession session;
   readonly attribute XREye eye;
-  readonly attribute FrozenArray&lt;DOMPointReadOnly&gt;? polygon;
+  [SameObject] readonly attribute Float32Array vertices;
+  [SameObject] readonly attribute Uint32Array indices;
 };
 
 dictionary XRVisibilityMaskChangeEventInit : EventInit {
   required XRSession session;
   required XREye eye;
-  required sequence&lt;DOMPointReadOnly&gt; polygon;
+  required Float32Array vertices;
+  required Uint32Array indices;
 };
 </pre>
 
@@ -2616,7 +2618,11 @@ The <dfn attribute for="XRVisibilityMaskChangeEvent">session</dfn> attribute ind
 
 The <dfn attribute for="XRVisibilityMaskChangeEvent">eye</dfn> attribute indicates which {{XREye}} the mask applies to.
 
-The <dfn attribute for="XRVisibilityMaskChangeEvent">polygon</dfn> attribute is an optional [=/list=] of {{DOMPointReadOnly}} vertices that encompass the region of the eye's {{XRView}} that SHOULD be drawn. If this attribute is `null`, the whole region of the {{XRView}} SHOULD be drawn. The <code>Z</code> coordinate of each {{DOMPointReadOnly}} vertex in {{XRVisibilityMaskChangeEvent/polygon}} MUST be <code>-1</code>.
+The <dfn attribute for="XRVisibilityMaskChangeEvent">vertices</dfn> attribute is a [=/list=] of <code>X</code>, <code>Y</code> coordinates. The experience MUST assume that the <code>Z</code> coordinate is <code>-1</code>. Each <code>X</code>, <code>Y</code>, <code>Z</code> coordinate describes a vertex. 
+If this array is empty, the whole region of the {{XRView}} SHOULD be drawn.
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">indices</dfn> attribute is a [=/list=] of indices that describe the index into the vertex list described by {{XRVisibilityMaskChangeEvent/vertices}}. These indices will describe the region of the eye's {{XRView}} that SHOULD be drawn.
+If this array is empty, the whole region of the {{XRView}} SHOULD be drawn.
 
 The area MUST be drawn using the {{XRViewGeometry/projectionMatrix}} of the {{XRView}} of {{XRVisibilityMaskChangeEvent/eye}} and a default {{XRRigidTransform}}.
 
