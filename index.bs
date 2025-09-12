@@ -2599,6 +2599,8 @@ Because the frustum does not intersect precisely with the rectangular display, t
 
 The {{XRVisibilityMaskChangeEvent}} event is fired when the user agent wants to inform the experience that the displayed area of the {{XRLayer}} changed. The experience MAY choose to only draw that region which MAY help with performance. 
 
+NOTE: the experience MUST register this event during the promise resolution of {{XRSystem/requestSession}}. Otherwise, the event may fire and the mask will be lost to the experience.
+
 <pre class="idl">
 [SecureContext, Exposed=Window]
 interface XRVisibilityMaskChangeEvent : Event {
