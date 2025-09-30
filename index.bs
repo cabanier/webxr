@@ -1238,16 +1238,19 @@ When this method is invoked, the user agent MUST run the following steps:
   1. [=Populate the pose=] of |session|'s [=XRSession/viewer reference space=] in |referenceSpace| at the time represented by |frame| into |pose|, with `force emulation` set to `true`.
   1. If |pose| is `null` return `null`.
   1. Let |xrviews| be an empty [=/list=].
+  1. Let |offset| be `0`.
   1. For each [=view/active=] [=view=] |view| in the [=XRSession/list of views=] on {{XRFrame/session}}, perform the following steps:
       1. Let |xrview| be a new {{XRView}} object in the [=relevant realm=] of |session|.
       1. Initialize |xrview|'s [=XRView/underlying view=] to |view|.
       1. Initialize |xrview|'s {{XRView/eye}} to |view|'s [=view/eye=].
+      1. Initialize |xrview|'s {{XRView/index}} to |offset|.
       1. Initialize |xrview|'s [=XRView/frame=] to |frame|.
       1. Initialize |xrview|'s [=XRView/session=] to |session|.
       1. Initialize |xrview|'s [=view/reference space=] to |referenceSpace|.
-      1. Let |offset| be an [=new=] {{XRRigidTransform}} object equal to the [=view offset=] of |view| in the [=relevant realm=] of |session|.
-      1. Set |xrview|'s {{XRViewGeometry/transform}} property to the result of [=multiply transforms|multiplying=] the {{XRViewerPose}}'s {{XRPose/transform}} by the |offset| transform in the relevant realm of |session|
-      1. [=list/Append=] |xrview| to |xrviews|
+      1. Let |viewtransform| be an [=new=] {{XRRigidTransform}} object equal to the [=view offset=] of |view| in the [=relevant realm=] of |session|.
+      1. Set |xrview|'s {{XRViewGeometry/transform}} property to the result of [=multiply transforms|multiplying=] the {{XRViewerPose}}'s {{XRPose/transform}} by the |viewtransform| transform in the relevant realm of |session|.
+      1. [=list/Append=] |xrview| to |xrviews|.
+      1. Increase |offset| by `1`.
   1. Set |pose|'s {{XRViewerPose/views}} to |xrviews|
   1. Return |pose|.
 
@@ -1574,6 +1577,7 @@ enum XREye {
 
 [SecureContext, Exposed=Window] interface XRView {
   readonly attribute XREye eye;
+  readonly attribute unsigned long index;
   readonly attribute double? recommendedViewportScale;
 
   undefined requestViewportScale(double? scale);
@@ -1585,6 +1589,8 @@ XRView includes XRViewGeometry;
 The {{XRViewGeometry/transform}} is given in it's [=view/reference space=].
 
 The <dfn attribute for="XRView">eye</dfn> attribute describes the [=view/eye=] of the underlying [=view=]. This attribute's primary purpose is to ensure that pre-rendered stereo content can present the correct portion of the content to the correct eye.
+
+The <dfn attribute for="XRView">index</dfn> attribute describes the offet of this {{XRView}} when it is return in the {{XRViewerPose/views}} array by {{XRFrame/getViewerPose()}}. 
 
 The optional <dfn attribute for="XRView">recommendedViewportScale</dfn> attribute contains a UA-recommended viewport scale value that the application can use for a {{XRView/requestViewportScale()}} call to configure dynamic viewport scaling. It is `null` if the system does not implement a heuristic or method for determining a recommended scale. If not null, the value MUST be a numeric value greater than 0.0 and less than or equal to 1.0, and MUST be [=quantization|quantized=] to avoid providing detailed performance or GPU utilization data.
 
@@ -2588,6 +2594,51 @@ The <dfn attribute for="XRReferenceSpaceEvent">referenceSpace</dfn> attribute in
 The optional <dfn attribute for="XRReferenceSpaceEvent">transform</dfn> attribute describes the post-event position and orientation of the {{XRReferenceSpaceEvent/referenceSpace}}'s [=native origin=] in the pre-event coordinate system. This attribute MAY be `null` if the {{XRSystem}} can't determine the delta between the old and the new coordinate system.
 
 NOTE: situations where {{XRReferenceSpaceEvent/referenceSpace}} or {{XRReferenceSpaceEventInit/referenceSpace}} can be when the headset was doffed and donned between 2 seperate locations. In such cases, if the experience relies on world-locked content, it should warn the user and reset the scene.
+
+XRVisibilityMaskChangeEvent {#xrvisibilitymaskchangeevent-interface}
+--------------
+
+Because the frustum does not intersect precisely with the rectangular display, the entire area of the {{XRLayer}} MAY not be displayed. This event will inform the experience about the region of the {{XRView}} that is displayed to the user.
+
+The {{XRVisibilityMaskChangeEvent}} event is fired when the user agent wants to inform the experience that the displayed area of the {{XRLayer}} changed. The experience MAY choose to only draw that region which MAY help with performance. 
+
+NOTE: the experience MUST register this event during the promise resolution of {{XRSystem/requestSession}}. Otherwise, the event may fire and the mask will be lost to the experience.
+
+<pre class="idl">
+[SecureContext, Exposed=Window]
+interface XRVisibilityMaskChangeEvent : Event {
+  constructor(DOMString type, XRVisibilityMaskChangeEventInit eventInitDict);
+  [SameObject] readonly attribute XRSession session;
+  readonly attribute XREye eye;
+  readonly attribute unsigned long index;
+  [SameObject] readonly attribute Float32Array vertices;
+  [SameObject] readonly attribute Uint32Array indices;
+};
+
+dictionary XRVisibilityMaskChangeEventInit : EventInit {
+  required XRSession session;
+  required XREye eye;
+  required unsigned long index;
+  required Float32Array vertices;
+  required Uint32Array indices;
+};
+</pre>
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">session</dfn> attribute indicates the {{XRSession}} that generated the event.
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">eye</dfn> attribute indicates which {{XREye}} the mask applies to.
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">index</dfn> attribute indicates the offset into the [=XRSession/list of views=] of the {{XRView}} that this mask applies to.
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">vertices</dfn> attribute is a [=/list=] of <code>X</code>, <code>Y</code> coordinates. The experience MUST assume that the <code>Z</code> coordinate is <code>-1</code>. Each <code>X</code>, <code>Y</code>, <code>Z</code> coordinate describes a vertex. 
+If this array is empty, the whole region of the {{XRView}} SHOULD be drawn.
+
+The <dfn attribute for="XRVisibilityMaskChangeEvent">indices</dfn> attribute is a [=/list=] of indices that describe the index into the vertex list described by {{XRVisibilityMaskChangeEvent/vertices}}. These indices will describe the region of the eye's {{XRView}} that SHOULD be drawn.
+If this array is empty, the whole region of the {{XRView}} SHOULD be drawn.
+
+The area MUST be drawn using the {{XRViewGeometry/projectionMatrix}} of the {{XRView}} of {{XRVisibilityMaskChangeEvent/eye}} and a default {{XRRigidTransform}}.
+
+NOTE: this means that the area MUST NOT use the {{XRRigidTransform}} of the current {{XRView}} of {{XRVisibilityMaskChangeEvent/eye}}.
 
 Event Types {#event-types}
 -----------
