@@ -205,7 +205,7 @@ This document uses the acronym <b>XR</b> throughout to refer to the spectrum of 
 
  * Head-mounted displays, whether they are opaque, transparent, or utilize video passthrough
  * Mobile devices with positional tracking
- * Fixed displays with head tracking capabilities
+ * Fixed displays with spatial tracking capabilities
 
 The important commonality between them being that they offer some degree of spatial tracking with which to simulate a view of virtual content.
 
@@ -252,7 +252,7 @@ The user agent MUST have a <dfn for="">default inline XR device</dfn>, which is 
 
 Note: The [=/default inline XR device=] exists purely as a convenience for developers, allowing them to use the same rendering and input logic for both inline and immersive content. The [=/default inline XR device=] does not expose any information not already available to the developer through other mechanisms on the page (such as pointer events for input), it only surfaces those values in an XR-centric format.
 
-The user agent MUST have a <dfn for="">inline XR device</dfn>, which is an [=/XR device=] that MUST [=list/contains|contain=] {{XRSessionMode/"inline"}} in its [=list of supported modes=]. The [=/inline XR device=] MAY be [=capable of supporting=] the [=feature descriptor/multi-view=] [=feature descriptor=] if it can expose its supported [=primary views=] as part of the HTML document. The [=/inline XR device=] MAY be [=capable of supporting=] the [=feature descriptor/head-tracked=] [=feature descriptor=] if it can provide viewer tracking appropriate for inline presentation. If the [=/inline XR device=] exposes head-tracked pose or view data to an {{XRSessionMode/"inline"}} session with the [=feature descriptor/multi-view=] and [=feature descriptor/head-tracked=] features enabled, it MUST provide the viewer tracking needed to render those views. The [=/inline XR device=] MAY be the [=immersive XR device=] if the tracking it provides makes sense to expose to inline content or the [=/default inline XR device=] otherwise.
+The user agent MUST have a <dfn for="">inline XR device</dfn>, which is an [=/XR device=] that MUST [=list/contains|contain=] {{XRSessionMode/"inline"}} in its [=list of supported modes=]. The [=/inline XR device=] MAY be [=capable of supporting=] the [=feature descriptor/inline-stereo=] [=feature descriptor=] if it can expose its supported [=primary views=] as part of the HTML document. The [=/inline XR device=] MAY be the [=immersive XR device=] if the tracking it provides makes sense to expose to inline content or the [=/default inline XR device=] otherwise.
 
 Note: On phones, the [=/inline XR device=] may report pose information derived from the phone's internal sensors, such as the gyroscope and accelerometer. On desktops and laptops without similar sensors, the [=/inline XR device=] will not be able to report a pose, and as such should fall back to the [=/default inline XR device=]. In case the user agent is already running on an [=/XR device=], the [=/inline XR device=] will be the same device, and may support multiple [=view|views=]. User consent must be given before any tracking or input features beyond what the [=/default inline XR device=] exposes are provided.
 
@@ -492,7 +492,7 @@ enum XRSessionMode {
 };
 </pre>
 
-  - A session mode of <dfn enum-value for="XRSessionMode">inline</dfn> indicates that the session's output will be shown as an element in the HTML document. {{inline}} session content MUST be displayed using the [=XRSession/list of views=] exposed for the session. Unless the [=feature descriptor/multi-view=] feature is enabled, this is a single [=view=] whose [=view/eye=] is {{XREye/"none"}}. It MAY allow for [=viewer=] tracking when [=feature descriptor/head-tracked=] is granted. User agents MUST allow {{inline}} sessions to be created.
+  - A session mode of <dfn enum-value for="XRSessionMode">inline</dfn> indicates that the session's output will be shown as an element in the HTML document. {{inline}} session content MUST be displayed using the [=XRSession/list of views=] exposed for the session. Unless the [=feature descriptor/inline-stereo=] feature is enabled, this is a single [=view=] whose [=view/eye=] is {{XREye/"none"}}. User agents MUST allow {{inline}} sessions to be created.
   - A session mode of <dfn enum-value for="XRSessionMode">immersive-vr</dfn> indicates that the session's output will be given [=exclusive access=] to the [=immersive XR device=] display and that content <b>is not</b> intended to be integrated with the user's environment.
   - The behavior of the <dfn enum-value for="XRSessionMode">immersive-ar</dfn> session mode is defined in the <a href="https://www.w3.org/TR/webxr-ar-module-1/">WebXR AR Module</a> and MUST NOT be added to the [=immersive XR device=]'s [=list of supported modes=] unless the UA implements that module.
 
@@ -528,16 +528,14 @@ dictionary XRSessionInit {
 
 The <dfn dict-member for="XRSessionInit">requiredFeatures</dfn> array contains any [=Required features=] for the experience. If any value in the list is not a recognized [=feature descriptor=] the {{XRSession}} will not be created. If any feature listed in the {{XRSessionInit/requiredFeatures}} array is not supported by the [=XRSession/XR device=] or, if necessary, has not received a clear signal of [=user intent=] the {{XRSession}} will not be created.
 
-For {{XRSessionMode/"inline"}} sessions, [=feature descriptor/head-tracked=] is an exception to this behavior when [=feature descriptor/multi-view=] is also included in {{XRSessionInit/requiredFeatures}} or {{XRSessionInit/optionalFeatures}}. If [=feature descriptor/head-tracked=] is included in {{XRSessionInit/requiredFeatures}} but is not granted, the {{XRSession}} MAY still be created without [=feature descriptor/head-tracked=] in its [=XRSession/set of granted features=].
-
 The <dfn dict-member for="XRSessionInit">optionalFeatures</dfn> array contains any [=Optional features=] for the experience. If any value in the list is not a recognized [=feature descriptor=] it will be ignored. Features listed in the {{XRSessionInit/optionalFeatures}} array will be enabled if supported by the [=XRSession/XR device=] and, if necessary, given a clear signal of [=user intent=], but will not block creation of the {{XRSession}} if absent.
 
 Values given in the feature lists are considered a valid <dfn>feature descriptor</dfn> if the value is one of the following:
 
  - The string representation of any {{XRReferenceSpaceType}} enum value
  - The string "<dfn for="feature descriptor">tracked-sources</dfn>"
- - The string "<dfn for="feature descriptor">multi-view</dfn>"
- - The string "<dfn for="feature descriptor">head-tracked</dfn>"
+ - The string "<dfn for="feature descriptor">inline-stereo</dfn>"
+ - The string "<dfn for="feature descriptor">secondary-views</dfn>"
 
 Future iterations of this specification and additional modules may expand the list of accepted [=feature descriptors=].
 
@@ -586,11 +584,6 @@ Some [=feature descriptors=], when present in the [=requested features=] list, a
       <td>[=Inline sessions=] require consent</td>
     </tr>
     <tr>
-      <td>[=feature descriptor/head-tracked=]</td>
-      <td>"xr-spatial-tracking"</td>
-      <td>[=Inline sessions=] require consent</td>
-    </tr>
-    <tr>
       <td>{{XRReferenceSpaceType/"local-floor"}}</td>
       <td>"xr-spatial-tracking"</td>
       <td>Always requires consent</td>
@@ -610,15 +603,9 @@ Some [=feature descriptors=], when present in the [=requested features=] list, a
 
 Note: {{XRReferenceSpaceType/"local"}} is always included in the [=requested features=] of [=immersive sessions=] as a [=default feature=], and as such [=immersive sessions=] always need to obtain [=explicit consent=] or [=implicit consent=].
 
-The [=feature descriptor/multi-view=] feature descriptor requests that an [=inline session=] expose the number of [=primary views=] supported by the [=XRSession/XR device=] for inline presentation. If enabled, the [=XRSession/list of views=] MUST contain either one [=primary view=] whose [=view/eye=] is {{XREye/"none"}}, or two [=primary views=], one whose [=view/eye=] is {{XREye/"left"}} and one whose [=view/eye=] is {{XREye/"right"}}. The [=feature descriptor/multi-view=] feature descriptor does not request head-tracked pose or view data.
+The [=feature descriptor/inline-stereo=] feature descriptor requests that an [=inline session=] expose stereo [=primary views=] for inline presentation. If enabled, the [=XRSession/list of views=] MUST contain two [=primary views=], one whose [=view/eye=] is {{XREye/"left"}} and one whose [=view/eye=] is {{XREye/"right"}}.
 
-The [=feature descriptor/head-tracked=] feature descriptor requests that an [=inline session=] expose head-tracked pose or view data for the views exposed by the [=feature descriptor/multi-view=] feature. The [=feature descriptor/head-tracked=] feature descriptor is only valid in an {{XRSessionInit}} when [=feature descriptor/multi-view=] is also included in either {{XRSessionInit/requiredFeatures}} or {{XRSessionInit/optionalFeatures}}. An [=inline session=] MUST NOT expose head-tracked pose or view data unless both [=feature descriptor/multi-view=] and [=feature descriptor/head-tracked=] are included in its [=XRSession/set of granted features=].
-
-The [=feature descriptor/multi-view=] and [=feature descriptor/head-tracked=] feature descriptors only apply to {{XRSessionMode/"inline"}} sessions. They MUST NOT be granted to [=immersive sessions=].
-
-A user agent MUST require the same permissions and [=user intent=] needed to expose tracking data to {{XRSessionMode/"immersive-vr"}} and {{XRSessionMode/"immersive-ar"}} sessions before granting [=feature descriptor/head-tracked=] to an [=inline session=], even if the session did not request a spatial reference-space feature such as {{XRReferenceSpaceType/"local"}}. If that permission or user intent is denied, or if the session request was not made in a way that can establish [=user intent=], the user agent MAY still enable [=feature descriptor/multi-view=] and display its output using the [=XRSession/XR device=]'s supported views, but the user agent MUST NOT grant [=feature descriptor/head-tracked=] and the session MUST NOT be tracked to the user's head pose.
-
-A user agent MAY display [=feature descriptor/multi-view=] output as non-head-tracked views. Non-head-tracked [=feature descriptor/multi-view=] output MUST NOT expose head-tracked pose or view data and does not require a permissions prompt beyond any permissions required by the session's [=requested features=].
+The [=feature descriptor/inline-stereo=] feature descriptor only applies to {{XRSessionMode/"inline"}} sessions. It MUST NOT be granted to [=immersive sessions=].
 
 [=Requested features=] can only be enabled for a session if the [=XRSession/XR device=] is <dfn>capable of supporting</dfn> the feature, which means that the feature is known to be supported by the [=XRSession/XR device=] in some configurations, even if the current configuration has not yet been verified as supporting the feature. The user agent MAY apply more rigorous constraints if desired in order to yield a more consistent user experience.
 
@@ -992,10 +979,11 @@ Each {{XRSession}} has a <dfn for="XRSession">viewer reference space</dfn>, whic
 
 Each {{XRSession}} has a <dfn for="XRSession">list of views</dfn>, which is a [=/list=] of [=view=]s corresponding to the views provided by the [=XRSession/XR device=]. The [=XRSession/list of views=] is immutable during the {{XRSession}} and MUST contain any [=views=] that may be surfaced during the session, including [=secondary views=] that may not initially be [=view/active=].
 
-If the {{XRSession}}'s {{XRSession/renderState}}'s [=XRRenderState/composition enabled=] boolean is set to `false`, the [=XRSession/list of views=] MUST be determined by the {{XRSession}}'s [=XRSession/mode=] and [=XRSession/set of granted features=]:
+The [=primary views=] in the [=XRSession/list of views=] MUST be determined by the {{XRSession}}'s [=XRSession/mode=] and [=XRSession/set of granted features=]:
 
-  - For an {{XRSessionMode/"inline"}} session without [=feature descriptor/multi-view=] included in its [=XRSession/set of granted features=], the [=XRSession/list of views=] MUST contain a single [=view=] whose [=view/eye=] is {{XREye/"none"}}.
-  - For an {{XRSessionMode/"inline"}} session with [=feature descriptor/multi-view=] included in its [=XRSession/set of granted features=], the [=XRSession/list of views=] MUST contain the number of [=primary views=] supported by the [=XRSession/XR device=] for the session: either one [=primary view=] whose [=view/eye=] is {{XREye/"none"}}, or two [=primary views=], one whose [=view/eye=] is {{XREye/"left"}} and one whose [=view/eye=] is {{XREye/"right"}}.
+  - For an {{XRSessionMode/"inline"}} session without [=feature descriptor/inline-stereo=] included in its [=XRSession/set of granted features=], the [=XRSession/list of views=] MUST contain a single [=primary view=] whose [=view/eye=] is {{XREye/"none"}}.
+  - For an {{XRSessionMode/"inline"}} session with [=feature descriptor/inline-stereo=] included in its [=XRSession/set of granted features=], the [=XRSession/list of views=] MUST contain two [=primary views=], one whose [=view/eye=] is {{XREye/"left"}} and one whose [=view/eye=] is {{XREye/"right"}}.
+  - For an [=immersive session=], the [=XRSession/list of views=] MUST contain the [=primary views=] supported by the [=XRSession/XR device=] for the session.
 
 The <dfn attribute for="XRSession">onend</dfn> attribute is an [=Event handler IDL attribute=] for the {{end}} event type.
 
@@ -1075,7 +1063,7 @@ The <dfn attribute for="XRRenderState">passthroughFullyObscured</dfn> attribute 
 
 NOTE: the {{XRSystem}} MAY use this as a hint to temporarily disable passthrough. On devices with see-through optics, the user will continue to see their environment and this flag will have no effect.
 
-The <dfn attribute for="XRRenderState">inlineVerticalFieldOfView</dfn> attribute defines the default vertical field of view in radians used when computing projection matrices for {{XRSessionMode/"inline"}} {{XRSession}}s. The projection matrix calculation also takes into account the aspect ratio of the [=XRRenderState/output canvas=]. For [=inline sessions=] with [=feature descriptor/multi-view=] and [=feature descriptor/head-tracked=] enabled, the user agent MUST compute per-view projection matrices using the [=viewer=] pose and the physical relationship between the [=viewer=] and the [=XRRenderState/output canvas=]. For [=inline sessions=] with [=feature descriptor/multi-view=] enabled but without [=feature descriptor/head-tracked=] enabled, the user agent MUST compute per-view projection matrices without using the user's head pose. This value MUST be `null` for [=immersive sessions=].
+The <dfn attribute for="XRRenderState">inlineVerticalFieldOfView</dfn> attribute defines the default vertical field of view in radians used when computing projection matrices for {{XRSessionMode/"inline"}} {{XRSession}}s. The projection matrix calculation also takes into account the aspect ratio of the [=XRRenderState/output canvas=]. For [=inline sessions=] with [=feature descriptor/inline-stereo=] enabled, the user agent MUST compute per-view projection matrices using the [=XRRenderState/output canvas=] geometry. This value MUST be `null` for [=immersive sessions=].
 
 The <dfn attribute for="XRRenderState">baseLayer</dfn> attribute defines an {{XRWebGLLayer}} which the [=XR compositor=] will obtain images from.
 
@@ -1686,10 +1674,10 @@ Primary and Secondary Views {#primary-and-secondary-views}
 
 A [=view=] is a <dfn>primary view</dfn> when rendering to it is necessary for an XR experience. [=Primary views=] MUST be [=view/active=] for the entire duration of the {{XRSession}}.
 
-A [=view=] is a <dfn>secondary view</dfn> when it is possible for content to choose to not render to it and still produce a working immersive experience. When content chooses to not render to these views, the user agent MAY be able to reconstruct them via reprojection. Secondary views MUST NOT be [=view/active=] unless the "[=secondary view/secondary-views=]" feature is enabled.
+A [=view=] is a <dfn>secondary view</dfn> when it is possible for content to choose to not render to it and still produce a working immersive experience. When content chooses to not render to these views, the user agent MAY be able to reconstruct them via reprojection. Secondary views MUST NOT be [=view/active=] unless the "[=feature descriptor/secondary-views=]" feature is enabled.
 
 <div class="example">
-Examples of [=primary views=] include the main mono view for a handheld AR session, the main two stereo views for headworn AR/VR sessions or [=inline sessions=] with [=feature descriptor/multi-view=] enabled, or all of the wall views for a CAVE session.
+Examples of [=primary views=] include the main mono view for a handheld AR session, the main two stereo views for headworn AR/VR sessions or [=inline sessions=] with [=feature descriptor/inline-stereo=] enabled, or all of the wall views for a CAVE session.
 
 Examples of [=secondary views=] include the [=first-person observer view=] used for video capture, or "quad views" where there are two views per eye with differing resolution and fields of view.
 
@@ -1701,15 +1689,15 @@ While content should be written to assume that there may be any number of views,
 Because user agents may have the ability to use mechanisms like reprojection to render to these [=secondary views=] in lieu of the content, it is desirable to be able to distinguish between content that plans on handling these [=secondary views=] itself and content that is either oblivious to the existence of such [=secondary views=] or does not wish to deal with them.
 </div>
 
-To provide for this, user agents that expose [=secondary views=] MUST support an "<dfn for="secondary view">secondary-views</dfn>" [=feature descriptor=] as a hint. Content enabling this feature is expected to:
+To provide for this, user agents that expose [=secondary views=] MUST support the "[=feature descriptor/secondary-views=]" [=feature descriptor=] as a hint. Content enabling this feature is expected to:
 
  - Handle any nonzero number of [=views=] in the {{XRViewerPose/views}} array.
  - Handle the existence of multiple [=views=] that have the same [=view/eye=].
  - Handle the size of the {{XRViewerPose/views}} array changing from frame to frame. <span class=note>This can happen when video capture is enabled, for example</span>
 
-When "[=secondary view/secondary-views=]" is enabled, the user agent MAY surface any [=secondary views=] the device supports to the {{XRSession}}, when necessary. The user agent MUST NOT use reprojection to reconstruct [=secondary views=] in such a case, and instead rely on whatever the content decides to render.
+When "[=feature descriptor/secondary-views=]" is enabled, the user agent MAY surface any [=secondary views=] the device supports to the {{XRSession}}, when necessary. The user agent MUST NOT use reprojection to reconstruct [=secondary views=] in such a case, and instead rely on whatever the content decides to render.
 
-Note: We recommend content use {{XRSessionInit/optionalFeatures}} to enable "[=secondary view/secondary-views=]" to ensure maximum compatibility.
+Note: We recommend content use {{XRSessionInit/optionalFeatures}} to enable "[=feature descriptor/secondary-views=]" to ensure maximum compatibility.
 
 If [=secondary views=] have lower underlying frame rates, the {{XRSession}} MAY choose to do one or more of the following:
 
@@ -1906,7 +1894,7 @@ The <dfn attribute for="XRPose">emulatedPosition</dfn> attribute is `false` when
 XRViewerPose {#xrviewerpose-interface}
 ------------
 
-An {{XRViewerPose}} is an {{XRPose}} describing the state of a <dfn>viewer</dfn> of the XR scene as tracked by the [=XRSession/XR device=]. A [=viewer=] may represent a tracked piece of hardware, the observed position of a user's head relative to the hardware, or some other means of computing a series of viewpoints into the XR scene. {{XRViewerPose}}s can only be queried relative to an {{XRReferenceSpace}}. It provides, in addition to the {{XRPose}} values, an array of [=view=]s which include rigid transforms to indicate the viewpoint and projection matrices. These values should be used by the application when rendering a frame of an XR scene.
+An {{XRViewerPose}} is an {{XRPose}} describing the state of a <dfn>viewer</dfn> of the XR scene as tracked by the [=XRSession/XR device=]. A [=viewer=] may represent a tracked piece of hardware, the observed position of the user relative to the hardware, or some other means of computing a series of viewpoints into the XR scene. {{XRViewerPose}}s can only be queried relative to an {{XRReferenceSpace}}. It provides, in addition to the {{XRPose}} values, an array of [=view=]s which include rigid transforms to indicate the viewpoint and projection matrices. These values should be used by the application when rendering a frame of an XR scene.
 
 <pre class="idl">
 [SecureContext, Exposed=Window] interface XRViewerPose : XRPose {
@@ -2327,7 +2315,9 @@ Each {{XRWebGLLayer}} MUST have a <dfn>list of full-sized viewports</dfn> which 
 
 If [=XRWebGLLayer/composition enabled=] is `false` and the [=XRWebGLLayer/session=]'s [=XRSession/list of views=] contains a single [=view=] whose [=view/eye=] is {{XREye/"none"}}, the [=list of full-sized viewports=] MUST contain a single [=WebGL viewport=] that covers the [=XRWebGLLayer/context=]'s entire default framebuffer.
 
-If [=XRWebGLLayer/composition enabled=] is `false` and the [=XRWebGLLayer/session=]'s [=XRSession/list of views=] contains two [=primary views=], one whose [=view/eye=] is {{XREye/"left"}} and one whose [=view/eye=] is {{XREye/"right"}}, the [=list of full-sized viewports=] MUST contain two [=WebGL viewport=]s: one associated with the {{XREye/"left"}} [=view=] and one associated with the {{XREye/"right"}} [=view=]. The {{XREye/"left"}} viewport MUST cover the left half of the [=XRWebGLLayer/context=]'s entire default framebuffer. The {{XREye/"right"}} viewport MUST cover the right half of the [=XRWebGLLayer/context=]'s entire default framebuffer. If the default framebuffer width is not evenly divisible by two, the user agent MUST assign the remaining column to one of the two viewports.
+If [=XRWebGLLayer/composition enabled=] is `false` and the [=XRWebGLLayer/session=]'s [=XRSession/list of views=] contains two [=primary views=], one whose [=view/eye=] is {{XREye/"left"}} and one whose [=view/eye=] is {{XREye/"right"}}, the [=list of full-sized viewports=] MUST contain two [=WebGL viewport=]s: one associated with the {{XREye/"left"}} [=view=] and one associated with the {{XREye/"right"}} [=view=]. The user agent determines the size and position of these viewports, subject to the constraints above.
+
+Note: This specification does not require a particular packing, such as side-by-side, for stereo inline viewports. Authors should use {{getViewport()}} for each {{XRView}} rather than assuming a layout.
 
 Each {{XRWebGLLayer}} MUST have a <dfn>list of viewport objects</dfn> which is a [=/list=] containing one {{XRViewport}} for each [=view/active=] [=view=] the {{XRSession}} currently exposes.
 
@@ -2783,13 +2773,13 @@ To determine if an <dfn>immersive session request is allowed</dfn> for a given |
 
 </div>
 
-Starting an [=inline session=] does not implicitly carry the same requirements as starting an [=immersive session=], though additional requirements may be imposed depending on the session's [=requested features=]. An [=inline session=] with [=feature descriptor/multi-view=] and [=feature descriptor/head-tracked=] enabled requires the same permissions and [=user intent=] needed to expose tracking data to [=immersive sessions=]. An [=inline session=] with [=feature descriptor/multi-view=] enabled but without [=feature descriptor/head-tracked=] enabled does not require a permissions prompt beyond any permissions required by the session's [=requested features=].
+Starting an [=inline session=] does not implicitly carry the same requirements as starting an [=immersive session=], though additional requirements may be imposed depending on the session's [=requested features=].
 
 <div class="algorithm" data-algorithm="inline-session-allowed">
 
 To determine if an <dfn>inline session request is allowed</dfn> for a given |global object| the user agent MUST run the following steps:
 
-  1. Let |requiresUserIntent| be `true` if the session request contained any [=required features=] or [=optional features=] other than [=feature descriptor/multi-view=] or [=feature descriptor/head-tracked=], and `false` otherwise.
+  1. Let |requiresUserIntent| be `true` if the session request contained any [=required features=] or [=optional features=] other than [=feature descriptor/inline-stereo=], and `false` otherwise.
   1. If |requiresUserIntent| is `true` and the request was not made while the |global object| has [=transient activation=] or when [=launching a web application=], return `false`.
   1. If the |global object| is not a {{Window}}, return `false`.
   1. Return `true`.
@@ -2888,13 +2878,13 @@ Note: Examples of [=trusted UI=] include:
 
 </div>
 
-The ability to read input information (head pose, input pose, etc) poses a risk to the integrity of [=trusted UI=] as the page may use this information to snoop on the choices made by the user while interacting with the [=trusted UI=], including guessing keyboard input. To prevent this risk the user agent MUST set the [=visibility state=] of all {{XRSession}}s to {{XRVisibilityState/"hidden"}} or {{XRVisibilityState/"visible-blurred"}} when the user is interacting with [=trusted UI=] ([=trusted immersive ui|immersive=] or non-immersive) such as URL bars or system dialogs. Additionally, to prevent a malicious page from being able to monitor input on other pages the user agent MUST set the {{XRSession}}'s [=visibility state=] to {{XRVisibilityState/"hidden"}} if the [=currently focused area=] does not belong to the document which created the {{XRSession}}.
+The ability to read pose and input information poses a risk to the integrity of [=trusted UI=] as the page may use this information to snoop on the choices made by the user while interacting with the [=trusted UI=], including guessing keyboard input. To prevent this risk the user agent MUST set the [=visibility state=] of all {{XRSession}}s to {{XRVisibilityState/"hidden"}} or {{XRVisibilityState/"visible-blurred"}} when the user is interacting with [=trusted UI=] ([=trusted immersive ui|immersive=] or non-immersive) such as URL bars or system dialogs. Additionally, to prevent a malicious page from being able to monitor input on other pages the user agent MUST set the {{XRSession}}'s [=visibility state=] to {{XRVisibilityState/"hidden"}} if the [=currently focused area=] does not belong to the document which created the {{XRSession}}.
 
-When choosing between using {{XRVisibilityState/"hidden"}} or {{XRVisibilityState/"visible-blurred"}} for a particular instance of [=trusted UI=], the user agent MUST consider whether head pose information is a security risk. For example, [=trusted UI=] involving text input, especially password inputs, can potentially leak the typed text through the user's head pose as they type. The user agent SHOULD also stop exposing any eye tracking-related information in such cases.
+When choosing between using {{XRVisibilityState/"hidden"}} or {{XRVisibilityState/"visible-blurred"}} for a particular instance of [=trusted UI=], the user agent MUST consider whether pose information is a security risk. For example, [=trusted UI=] involving text input, especially password inputs, can potentially leak the typed text through the user's movements as they type. The user agent SHOULD also stop exposing any eye tracking-related information in such cases.
 
 The user agent MUST use [=trusted UI=] to show permissions prompts.
 
-If the virtual environment does not consistently track the user's head motion with low latency and at a high frame rate the user may become disoriented or physically ill. Since it is impossible to force pages to produce consistently performant and correct content the user agent MUST provide a tracked, trusted environment and an [=XR Compositor=] which runs asynchronously from page content. The compositor is responsible for compositing the trusted and untrusted content. If content is not performant, does not submit frames, or terminates unexpectedly the user agent should be able to continue presenting a responsive, [=trusted UI=].
+If the virtual environment does not consistently update the user's viewpoint with low latency and at a high frame rate the user may become disoriented or physically ill. Since it is impossible to force pages to produce consistently performant and correct content the user agent MUST provide a tracked, trusted environment and an [=XR Compositor=] which runs asynchronously from page content. The compositor is responsible for compositing the trusted and untrusted content. If content is not performant, does not submit frames, or terminates unexpectedly the user agent should be able to continue presenting a responsive, [=trusted UI=].
 
 Additionally, page content has the ability to make users uncomfortable in ways not related to performance. Badly applied tracking, strobing colors, and content intended to offend, frighten, or intimidate are examples of content which may cause the user to want to quickly exit the XR experience. Removing the XR device in these cases may not always be a fast or practical option. To accommodate this the user agent MUST provide users with an action, such as pressing a reserved hardware button or performing a gesture, that escapes out of WebXR content and displays the user agent's [=trusted UI=].
 
@@ -2980,7 +2970,7 @@ The feature identifier for this feature is `"xr-spatial-tracking"`.
 
 The [=default allowlist=] for this feature is `["self"]`.
 
-Note: If the document's [=origin=] is not allowed to use the `"xr-spatial-tracking"` [=permissions policy=] any [=immersive sessions=] will be blocked, because all [=immersive sessions=] require some use of spatial tracking. {{XRSessionMode/"inline"}} sessions will still be allowed, but restricted to only using the {{XRReferenceSpaceType/"viewer"}} {{XRReferenceSpace}}. If [=feature descriptor/multi-view=] is enabled for such a session, [=feature descriptor/head-tracked=] MUST NOT be granted and the session output MUST NOT be tracked to the user's head pose.
+Note: If the document's [=origin=] is not allowed to use the `"xr-spatial-tracking"` [=permissions policy=] any [=immersive sessions=] will be blocked, because all [=immersive sessions=] require some use of spatial tracking. {{XRSessionMode/"inline"}} sessions will still be allowed, but restricted to only using the {{XRReferenceSpaceType/"viewer"}} {{XRReferenceSpace}}.
 
 
 Permissions API Integration {#permissions}
@@ -3061,7 +3051,6 @@ To <dfn lt="request the xr permission">request the "xr" permission</dfn> with an
   1. For each |feature| in |consentRequired| perform the following steps:
       1. The user agent MAY at this point ask the user’s permission for the calling algorithm to use |feature|. The results of these prompts should be included when determining if there is a clear signal of [=user intent=] to enable |feature|.
       1. If a clear signal of [=user intent=] to enable |feature| has not been determined, run the following steps:
-          1. If |descriptor|'s {{XRPermissionDescriptor/mode}} is {{XRSessionMode/"inline"}} and |feature| is [=feature descriptor/head-tracked=], continue to the next entry.
           1. Set |status|'s {{PermissionStatus/state}} to {{PermissionState/"denied"}} and abort these steps.
       1. If |feature| is not in |granted|, append |feature| to |granted|.
   1. For each |feature| in |consentOptional| perform the following steps:
@@ -3085,7 +3074,6 @@ To <dfn>resolve the requested features</dfn> given |requiredFeatures| and |optio
   1. Let |consentRequired| be an empty [=/list=] of {{DOMString}}.
   1. Let |consentOptional| be an empty [=/list=] of {{DOMString}}.
   1. Let |granted| be an empty [=/list=] of {{DOMString}}.
-  1. Let |multiViewRequested| be `true` if |requiredFeatures| [=list/contains=] [=feature descriptor/multi-view=] or |optionalFeatures| [=list/contains=] [=feature descriptor/multi-view=], and `false` otherwise.
   1. Let |device| be the result of [=obtain the current device|obtaining the current device=] for |mode|, |requiredFeatures|, and |optionalFeatures|.
   1. Let |previouslyEnabled| be |device|'s [=XR device/set of granted features=] for |mode|.
   1. If |device| is `null` or |device|'s [=list of supported modes=] does not [=list/contain=] |mode|, run the following steps:
@@ -3094,29 +3082,19 @@ To <dfn>resolve the requested features</dfn> given |requiredFeatures| and |optio
   1. For each |feature| in |requiredFeatures| perform the following steps:
     1. If the |feature| is `null`, [=continue=] to the next entry.
     1. If |feature| is not a valid [=feature descriptor=], return `null`.
-    1. If |feature| is [=feature descriptor/head-tracked=] and |multiViewRequested| is `false`, return `null`.
     1. If |feature| is already in |granted|, continue to the next entry.
-    1. If the requesting document's [=origin=] is not allowed to use any [[#permissions-policy|permissions policy]] required by |feature| as indicated by the [=feature requirements=] table, run the following steps:
-        1. If |mode| is {{XRSessionMode/"inline"}} and |feature| is [=feature descriptor/head-tracked=], continue to the next entry.
-        1. Return `null`.
-    1. If |session|'s [=XRSession/XR device=] is not [=capable of supporting=] the functionality described by |feature| or the user agent has otherwise determined to reject the feature, run the following steps:
-        1. If |mode| is {{XRSessionMode/"inline"}} and |feature| is [=feature descriptor/head-tracked=], continue to the next entry.
-        1. Return `null`.
+    1. If the requesting document's [=origin=] is not allowed to use any [[#permissions-policy|permissions policy]] required by |feature| as indicated by the [=feature requirements=] table, return `null`.
+    1. If |session|'s [=XRSession/XR device=] is not [=capable of supporting=] the functionality described by |feature| or the user agent has otherwise determined to reject the feature, return `null`.
     1. If the functionality described by |feature| requires [=explicit consent=] and |feature| is not in |previouslyEnabled|, append it to |consentRequired|.
     1. Else append |feature| to |granted|.
   1. For each |feature| in |optionalFeatures| perform the following steps:
     1. If the |feature| is `null`, [=continue=] to the next entry.
     1. If |feature| is not a valid [=feature descriptor=], [=continue=] to the next entry.
-    1. If |feature| is [=feature descriptor/head-tracked=] and |multiViewRequested| is `false`, [=continue=] to the next entry.
     1. If |feature| is already in |granted|, continue to the next entry.
     1. If the requesting document's origin is not allowed to use any [[#permissions-policy|permissions policy]] required by |feature| as indicated by the [=feature requirements=] table, continue to the next entry.
     1. If |session|'s [=XRSession/XR device=] is not [=capable of supporting=] the functionality described by |feature| or the user agent has otherwise determined to reject the feature, continue to the next entry.
     1. If the functionality described by |feature| requires [=explicit consent=] and |feature| is not in |previouslyEnabled|, append it to |consentOptional|.
     1. Else append |feature| to |granted|.
-  1. If |granted| does not [=list/contain=] [=feature descriptor/multi-view=], run the following steps:
-    1. If |consentRequired| [=list/contains=] [=feature descriptor/head-tracked=], remove [=feature descriptor/head-tracked=] from |consentRequired|.
-    1. If |consentOptional| [=list/contains=] [=feature descriptor/head-tracked=], remove [=feature descriptor/head-tracked=] from |consentOptional|.
-    1. If |granted| [=list/contains=] [=feature descriptor/head-tracked=], remove [=feature descriptor/head-tracked=] from |granted|.
   1. Return the [=tuple=] `(|consentRequired|, |consentOptional|, |granted|)`
 
 </div>
@@ -3127,7 +3105,7 @@ Changes</h2>
 <h3 id="changes-from-20220331" class="no-num">
 Changes from the <a href="https://www.w3.org/TR/2022/CR-webxr-20220331/">Candidate Recommendation Snapshot, 31 March 2022</a></h3>
 
-- Add multi-view and head-tracked session features
+- Add inline-stereo session features
 - Expose XRSession's granted features (<a href="https://github.com/immersive-web/webxr/pull/1296">GitHub #1296</a>)
 - Add support for the isSystemKeyboardSupported attribute (<a href="https://github.com/immersive-web/webxr/pull/1314">GitHub #1314</a>)
 - Clarify getPose behavior with visibile-blurred (<a href="https://github.com/immersive-web/webxr/pull/1332">GitHub #1332</a>)
