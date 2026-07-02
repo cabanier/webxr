@@ -678,11 +678,15 @@ The <dfn attribute for="XRSession">isSystemKeyboardSupported</dfn> attribute ind
 
 A <dfn>browser overlay</dfn> is user agent UI that displays the non-immersive browser interface over an [=immersive session=]. The user agent controls the size, position, appearance, and available controls of the [=browser overlay=].
 
+Note: A [=browser overlay=] can display cross-origin content, which is not possible when using the HTML-in-Canvas API.
+
 <div class="algorithm" data-algorithm="toggle-overlay">
 
 The <dfn method for="XRSession">toggleOverlay()</dfn> method requests that the user agent toggle whether a [=browser overlay=] is shown over an [=immersive session=]. When invoked, it MUST run the following steps:
 
   1. Let |session| be [=this=].
+  1. Let |global object| be the [=relevant Global object=] for the {{XRSession}} on which this method was invoked.
+  1. If |global object| does not have [=transient activation=], throw a "{{SecurityError}}" {{DOMException}} and abort these steps.
   1. If |session|'s [=XRSession/ended=] value is `true`, throw an "{{InvalidStateError}}" {{DOMException}} and abort these steps.
   1. If |session| is not an [=immersive session=], throw a "{{NotSupportedError}}" {{DOMException}} and abort these steps.
   1. If |session|'s [=XRSession/browser overlay shown=] boolean is `true`, run the following steps:
