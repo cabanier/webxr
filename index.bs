@@ -698,7 +698,10 @@ The <dfn method for="XRSession">toggleOverlay()</dfn> method requests that the u
       1. The user agent MAY request the user's permission to resume |session|.
       1. If permission is denied, [=Shut down the session|shut down=] |session| and abort these steps.
       1. Perform the necessary platform-specific steps to resume |session|.
-    1. Otherwise, hide the [=browser overlay=] shown over |session|.
+      1. Set |session|'s [=XRSession/browser overlay active=] boolean to `false`.
+      1. Set |session|'s [=XRSession/visibility state=] to {{XRVisibilityState/"visible"}}.
+      1. Abort these steps.
+    1. Hide the [=browser overlay=] shown over |session|.
     1. Set |session|'s [=XRSession/browser overlay active=] boolean to `false`.
     1. Set |session|'s [=XRSession/visibility state=] to {{XRVisibilityState/"visible"}}.
     1. Abort these steps.
