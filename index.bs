@@ -2191,7 +2191,7 @@ No additional WebXR object registration is required. The [=XR presentation canva
 
 An <dfn>HTML-in-Canvas hit test result</dfn> is a tuple containing an [=XR canvas hit-test root=], a DOM target, a root-local point, and the distance in meters from the target ray's origin to the intersection in the [=session local coordinate system=]. These items are referred to as the result's root, target, point, and distance, respectively.
 
-For integration with this specification, HTML-in-Canvas provides a <dfn>read-back-allowed snapshot hit test</dfn> operation that accepts an [=HTML-in-Canvas rendering snapshot=], a rendered canvas child, and a point in that child's local border-box coordinates. The operation returns the topmost {{Element}} selected by normal DOM hit testing in the snapshot, or `null`. The operation MUST apply HTML-in-Canvas's <a href="https://github.com/WICG/html-in-canvas/#read-back-allowed-rendering">read-back-allowed rendering</a> rules. If the topmost hit-test candidate was omitted or substituted by those rules, the operation MUST return `null` and MUST NOT expose content behind that candidate.
+For integration with this specification, HTML-in-Canvas provides a <dfn>snapshot hit test</dfn> operation that accepts an [=HTML-in-Canvas rendering snapshot=], a rendered canvas child, and a point in that child's local border-box coordinates. The operation returns the topmost {{Element}} selected by normal DOM hit testing using the CSS and DOM state recorded by the snapshot, or `null`.
 
 To <dfn>hit test HTML-in-Canvas content</dfn> for an [=XR input source=] |source| in an {{XRSession}} |session| at a time |time|, the user agent MUST run the following steps:
 
@@ -2205,7 +2205,7 @@ To <dfn>hit test HTML-in-Canvas content</dfn> for an [=XR input source=] |source
     1. If the transformed ray does not intersect |root|'s `z = 0` plane at a non-negative distance while approaching |root|'s front face, continue.
     1. Let |point| be the intersection point.
     1. If |point| is outside |root|'s border box, continue.
-    1. Let |target| be the result of performing a [=read-back-allowed snapshot hit test=] with |snapshot|, |root|, and |point|.
+    1. Let |target| be the result of performing a [=snapshot hit test=] with |snapshot|, |root|, and |point|.
     1. If |target| is `null`, continue.
     1. Let |sessionPoint| be |point| transformed by |root|'s [=XR hit-test transform=].
     1. Let |distance| be the Euclidean distance in meters between |ray|'s origin and |sessionPoint|, both expressed in the [=session local coordinate system=].
