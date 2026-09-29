@@ -2168,7 +2168,7 @@ An {{Element}} |root| is an <dfn>XR canvas hit-test root</dfn> for an {{XRSessio
   - [=feature descriptor/html-in-canvas=] is included in |session|'s [=XRSession/set of granted features=].
   - |session|'s [=XRSession/presented HTML-in-Canvas snapshot=] is not `null`.
   - |root| was a direct child of an [=XR presentation canvas=] |canvas| for |session| in the rendering update that produced the presented snapshot.
-  - |canvas| had the <a href="https://github.com/WICG/html-in-canvas/#1-the-layoutsubtree-attribute"><code>layoutsubtree</code> attribute</a> enabled in that rendering update.
+  - |canvas|'s <a href="https://github.com/WICG/html-in-canvas/"><code>content</code> attribute</a> was in the <code>drawable</code> state in that rendering update.
   - |root| is included in the presented snapshot and had a generated border box in that rendering update.
   - |root| participated in pointer hit testing according to the CSS and DOM state recorded by the presented snapshot.
 
@@ -2187,7 +2187,7 @@ An [=XR canvas hit-test root=] whose [=XR hit-test transform=] is not finite, in
 
 Note: The [=XR hit-test transform=] is the model transform for the rectangle on which the HTML content is rendered. Its scale converts CSS pixels to meters. For example, rendering a 400 CSS pixel wide element as a one meter wide rectangle requires a horizontal scale of `1 / 400`.
 
-No additional WebXR object registration is required. The [=XR presentation canvas=], <code>layoutsubtree</code> attribute, and [=XR hit-test transform=] together associate the element with the session and describe its interactive placement.
+No additional WebXR object registration is required. The [=XR presentation canvas=], its <code>content="drawable"</code> state, and the [=XR hit-test transform=] together associate the element with the session and describe its interactive placement.
 
 An <dfn>HTML-in-Canvas hit test result</dfn> is a tuple containing an [=XR canvas hit-test root=], a DOM target, a root-local point, and the distance in meters from the target ray's origin to the intersection in the [=session local coordinate system=]. These items are referred to as the result's root, target, point, and distance, respectively.
 
